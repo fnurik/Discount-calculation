@@ -2,7 +2,6 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Руководство пользователя — SmartDiscount</title>
 </head>
 <body>
 

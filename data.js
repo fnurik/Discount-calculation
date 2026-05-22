@@ -1,4 +1,4 @@
-// ТОВАРЫ С КАТЕГОРИЯМИ
+
 const PRODUCTS = [
   { id: 1, name: "Смартфон X100", price: 25990, category: "electronics", icon: "fa-mobile-alt", catName: "Электроника" },
   { id: 2, name: "Ноутбук UltraBook", price: 68990, category: "electronics", icon: "fa-laptop", catName: "Электроника" },
@@ -42,7 +42,6 @@ function saveData() {
   localStorage.setItem('multiPageHistory', JSON.stringify(ordersHistory));
 }
 
-// Вспомогательные функции
 function getCartSubtotal() {
   return cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
 }
@@ -51,35 +50,115 @@ function getCartTotalQuantity() {
   return cart.reduce((sum, i) => sum + i.quantity, 0);
 }
 
-function getDiscountPercentByStatus(status) {
-  if(status === 'regular') return 5;
-  if(status === 'vip') return 10;
+// АВТОМАТИЧЕСКОЕ ПОЛУЧЕНИЕ ПРОЦЕНТА СКИДКИ
+function getAutoDiscountPercent() {
+  const totalOrdersCount = ordersHistory.length;
+  const totalSpent = ordersHistory.reduce((sum, order) => sum + order.finalAmount, 0);
+  
+  if(totalSpent >= 50000) return 10;
+  if(totalOrdersCount >= 3) return 5;
   return 0;
 }
 
-// Функция для автоматического определения статуса на основе истории заказов
 function getAutoStatusFromHistory() {
   const totalOrdersCount = ordersHistory.length;
   const totalSpent = ordersHistory.reduce((sum, order) => sum + order.finalAmount, 0);
   
-  // VIP проверка: сумма заказов >= 50000
   if(totalSpent >= 50000) {
-    return { status: 'vip', reason: `Общая сумма заказов ${totalSpent.toLocaleString()} ₽ ≥ 50 000 ₽`, totalSpent, totalOrdersCount };
+    return { 
+      status: 'vip', 
+      statusName: 'VIP-клиент',
+      discount: 10,
+      color: '#ff9800',
+      reason: `Общая сумма заказов ${totalSpent.toLocaleString()} ₽ ≥ 50 000 ₽`, 
+      totalSpent, 
+      totalOrdersCount 
+    };
   }
-  // Постоянный клиент: 3+ заказа
   if(totalOrdersCount >= 3) {
-    return { status: 'regular', reason: `Количество заказов: ${totalOrdersCount} (3 и более)`, totalSpent, totalOrdersCount };
+    return { 
+      status: 'regular', 
+      statusName: 'Постоянный клиент',
+      discount: 5,
+      color: '#4caf50',
+      reason: `Количество заказов: ${totalOrdersCount} (3 и более)`, 
+      totalSpent, 
+      totalOrdersCount 
+    };
   }
-  // Новый клиент
-  return { status: 'new', reason: `Недостаточно заказов или суммы для скидки`, totalSpent, totalOrdersCount };
+  return { 
+    status: 'new', 
+    statusName: 'Новый клиент',
+    discount: 0,
+    color: '#666',
+    reason: `Недостаточно заказов или суммы для скидки`, 
+    totalSpent, 
+    totalOrdersCount 
+  };
 }
 
-// Функция для проверки, достиг ли клиент VIP-статуса
 function checkVIPStatus() {
   const totalSpent = ordersHistory.reduce((sum, order) => sum + order.finalAmount, 0);
   const isVIP = totalSpent >= 50000;
   const neededForVIP = isVIP ? 0 : 50000 - totalSpent;
   return { isVIP, totalSpent, neededForVIP, ordersCount: ordersHistory.length };
+}
+
+function getOrdersCount() {
+  return ordersHistory.length;
+}
+
+function getTotalSpent() {
+  return ordersHistory.reduce((sum, order) => sum + order.finalAmount, 0);
+}
+
+function clearOrderHistory() {
+  if(confirm("Вы уверены, что хотите очистить всю историю заказов? Это действие нельзя отменить. Ваш статус сбросится до «Новый клиент».")) {
+    ordersHistory = [];
+    saveData();
+    updateCartBadge();
+    showToast("История заказов полностью очищена!");
+    if(window.location.pathname.includes('cart.html')) {
+      setTimeout(() => {
+        if(typeof renderCartPage === 'function') renderCartPage();
+        if(typeof displayAutoStatus === 'function') displayAutoStatus();
+      }, 100);
+    }
+    if(window.location.pathname.includes('rules.html')) {
+      setTimeout(() => {
+        if(typeof updateRulesHistoryInfo === 'function') updateRulesHistoryInfo();
+      }, 100);
+    }
+    return true;
+  }
+  return false;
+}
+
+function addTestOrder() {
+  const testOrder = {
+    date: new Date().toLocaleString(),
+    items: [{ name: "Тестовый заказ", quantity: 1, price: 1000 }],
+    subtotal: 1000,
+    discountPercent: 0,
+    discountAmount: 0,
+    finalAmount: 1000,
+    statusUsed: "test",
+    isTest: true
+  };
+  ordersHistory.unshift(testOrder);
+  saveData();
+  showToast("Тестовый заказ добавлен! Статус будет пересчитан.");
+  if(window.location.pathname.includes('cart.html')) {
+    setTimeout(() => {
+      if(typeof renderCartPage === 'function') renderCartPage();
+      if(typeof displayAutoStatus === 'function') displayAutoStatus();
+    }, 100);
+  }
+  if(window.location.pathname.includes('rules.html')) {
+    setTimeout(() => {
+      if(typeof updateRulesHistoryInfo === 'function') updateRulesHistoryInfo();
+    }, 100);
+  }
 }
 
 function updateCartBadge() {
@@ -104,12 +183,11 @@ function showToast(msg) {
   toast.style.zIndex = '999';
   toast.style.fontWeight = '500';
   document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 1800);
+  setTimeout(() => toast.remove(), 2000);
 }
 
-// Функция добавления в корзину (глобальная)
 function addToCartFromCatalog(product) {
-  loadData(); // Перезагружаем данные перед добавлением
+  loadData();
   const existing = cart.find(i => i.id === product.id);
   if(existing) {
     existing.quantity += 1;

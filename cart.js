@@ -1,40 +1,28 @@
-let selectedStatus = "new";
-let autoStatusInfo = null;
 
-// Функция для отображения автоматически определённого статуса
+
 function displayAutoStatus() {
   const autoStatus = getAutoStatusFromHistory();
-  autoStatusInfo = autoStatus;
   const autoDisplay = document.getElementById('autoStatusDisplay');
   const vipCheckInfo = document.getElementById('vipCheckInfo');
+  const ordersCountSpan = document.getElementById('ordersCountValue');
+  const totalSpentSpan = document.getElementById('totalSpentValue');
+  
+  if(ordersCountSpan) ordersCountSpan.innerText = autoStatus.totalOrdersCount;
+  if(totalSpentSpan) totalSpentSpan.innerText = autoStatus.totalSpent.toLocaleString() + ' ₽';
   
   if(!autoDisplay) return;
   
-  let statusIcon = '';
-  let statusText = '';
-  let statusColor = '';
+  autoDisplay.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;">
+      <span style="font-size: 32px;">${autoStatus.icon}</span>
+      <div>
+        <div style="font-size: 18px; font-weight: bold; color: ${autoStatus.color};">${autoStatus.statusName}</div>
+        <div style="font-size: 24px; font-weight: 800; color: ${autoStatus.color};">скидка ${autoStatus.discount}%</div>
+      </div>
+    </div>
+    <div style="font-size: 13px; margin-top: 10px; color: #555;">${autoStatus.reason}</div>
+  `;
   
-  if(autoStatus.status === 'vip') {
-    statusIcon = '💎';
-    statusText = 'VIP-клиент';
-    statusColor = '#ff9800';
-    autoDisplay.innerHTML = `<span style="color: ${statusColor};">${statusIcon} ${statusText} — скидка 10%</span>
-    <div style="font-size: 12px; margin-top: 5px;">✅ Достигнута сумма заказов ${autoStatus.totalSpent.toLocaleString()} ₽ (≥ 50 000 ₽)</div>`;
-  } else if(autoStatus.status === 'regular') {
-    statusIcon = '⭐';
-    statusText = 'Постоянный клиент';
-    statusColor = '#4caf50';
-    autoDisplay.innerHTML = `<span style="color: ${statusColor};">${statusIcon} ${statusText} — скидка 5%</span>
-    <div style="font-size: 12px; margin-top: 5px;">📦 Количество заказов: ${autoStatus.totalOrdersCount} (3+)</div>`;
-  } else {
-    statusIcon = '🆕';
-    statusText = 'Новый клиент';
-    statusColor = '#666';
-    autoDisplay.innerHTML = `<span style="color: ${statusColor};">${statusIcon} ${statusText} — скидка 0%</span>
-    <div style="font-size: 12px; margin-top: 5px;">📦 Заказов: ${autoStatus.totalOrdersCount} | 💰 Сумма: ${autoStatus.totalSpent.toLocaleString()} ₽</div>`;
-  }
-  
-  // Проверка VIP статуса
   const vipCheck = checkVIPStatus();
   if(vipCheckInfo) {
     if(!vipCheck.isVIP && vipCheck.neededForVIP > 0) {
@@ -45,7 +33,12 @@ function displayAutoStatus() {
       vipCheckInfo.style.color = '#d4af37';
       vipCheckInfo.style.fontWeight = '600';
     } else {
-      vipCheckInfo.innerHTML = `<i class="fas fa-info-circle"></i> Совершайте покупки, чтобы получить VIP-статус (50 000 ₽)`;
+      const needOrders = 3 - vipCheck.ordersCount;
+      if(needOrders > 0) {
+        vipCheckInfo.innerHTML = `<i class="fas fa-info-circle"></i> До статуса "Постоянный клиент" осталось ${needOrders} заказа(ов). До VIP: ${vipCheck.neededForVIP.toLocaleString()} ₽`;
+      } else {
+        vipCheckInfo.innerHTML = `<i class="fas fa-info-circle"></i> Совершайте покупки, чтобы получить VIP-статус (50 000 ₽)`;
+      }
       vipCheckInfo.style.color = '#666';
     }
   }
@@ -54,7 +47,7 @@ function displayAutoStatus() {
 }
 
 function renderCartPage() {
-  loadData(); // Перезагружаем данные перед отображением
+  loadData();
   const container = document.getElementById('cartItemsList');
   if(!container) return;
   
@@ -109,7 +102,7 @@ function removeCartItem(id) {
 function updateDiscountUI() {
   loadData();
   const subtotal = getCartSubtotal();
-  const discountPercent = getDiscountPercentByStatus(selectedStatus);
+  const discountPercent = getAutoDiscountPercent();
   const discountAmount = subtotal * discountPercent / 100;
   const finalPrice = subtotal - discountAmount;
   
@@ -124,25 +117,21 @@ function updateDiscountUI() {
   if(finalTotalSpan) finalTotalSpan.innerText = finalPrice.toLocaleString() + ' ₽';
 }
 
-function recalcDiscountFromSelect() {
-  const select = document.getElementById('customerStatusSelect');
-  if(select) {
-    selectedStatus = select.value;
-  }
-  updateDiscountUI();
-}
-
+// ФУНКЦИЯ ОФОРМЛЕНИЯ ЗАКАЗА (ИСПРАВЛЕНА)
 function checkoutOrder() {
+  console.log("checkoutOrder вызвана"); // Для отладки
   loadData();
+  
   if(cart.length === 0) {
-    alert("Корзина пуста! Добавьте товары в каталоге.");
+    alert(" Корзина пуста! Добавьте товары в каталоге.");
     return;
   }
   
   const subtotal = getCartSubtotal();
-  const discountPercent = getDiscountPercentByStatus(selectedStatus);
+  const discountPercent = getAutoDiscountPercent();
   const discountAmount = subtotal * discountPercent / 100;
   const finalAmount = subtotal - discountAmount;
+  const autoStatus = getAutoStatusFromHistory();
   
   const newOrder = {
     date: new Date().toLocaleString(),
@@ -151,7 +140,8 @@ function checkoutOrder() {
     discountPercent: discountPercent,
     discountAmount: discountAmount,
     finalAmount: finalAmount,
-    statusUsed: selectedStatus
+    statusUsed: autoStatus.status,
+    statusName: autoStatus.statusName
   };
   
   ordersHistory.unshift(newOrder);
@@ -160,41 +150,87 @@ function checkoutOrder() {
   renderCartPage();
   updateCartBadge();
   displayAutoStatus();
-  alert(`✅ Заказ оформлен!\nСумма со скидкой: ${finalAmount.toLocaleString()} ₽\nСпасибо за покупку!`);
+  
+  alert(` ЗАКАЗ ОФОРМЛЕН!\n\nСтатус: ${autoStatus.statusName} (скидка ${discountPercent}%)\nСумма заказа: ${subtotal.toLocaleString()} ₽\nСкидка: ${discountAmount.toLocaleString()} ₽\nИТОГО К ОПЛАТЕ: ${finalAmount.toLocaleString()} ₽\n\nСпасибо за покупку!`);
+  
+  // Обновляем страницу правил, если она открыта (для синхронизации)
+  if(typeof updateRulesHistoryInfo === 'function') {
+    updateRulesHistoryInfo();
+  }
 }
 
 // Инициализация страницы корзины
-loadData();
-renderCartPage();
-updateCartBadge();
-displayAutoStatus();
+document.addEventListener('DOMContentLoaded', function() {
+  console.log("DOM загружен, инициализация корзины");
+  loadData();
+  renderCartPage();
+  updateCartBadge();
+  displayAutoStatus();
+  
+  // КНОПКА ОФОРМЛЕНИЯ ЗАКАЗА
+  const checkoutBtn = document.getElementById('checkoutBtn');
+  if(checkoutBtn) {
+    console.log("Кнопка оформления найдена, добавляем обработчик");
+    checkoutBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      console.log("Клик по кнопке Оформить заказ");
+      checkoutOrder();
+    });
+  } else {
+    console.error("Кнопка с id='checkoutBtn' не найдена!");
+  }
+  
+  // Кнопка очистки корзины
+  const clearCartBtn = document.getElementById('clearCartBtn');
+  if(clearCartBtn) {
+    clearCartBtn.addEventListener('click', function() { 
+      cart = []; 
+      saveData(); 
+      renderCartPage(); 
+      updateCartBadge(); 
+      showToast(" Корзина очищена"); 
+    });
+  }
+  
+  // Кнопка очистки истории
+  const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+  if(clearHistoryBtn) {
+    clearHistoryBtn.addEventListener('click', function() {
+      clearOrderHistory();
+      displayAutoStatus();
+      updateDiscountUI();
+    });
+  }
+  
+  // Кнопка тестового заказа
+  const addTestOrderBtn = document.getElementById('addTestOrderBtn');
+  if(addTestOrderBtn) {
+    addTestOrderBtn.addEventListener('click', function() {
+      addTestOrder();
+      displayAutoStatus();
+      updateDiscountUI();
+      if(typeof updateRulesHistoryInfo === 'function') {
+        updateRulesHistoryInfo();
+      }
+    });
+  }
+});
 
-// Привязываем обработчики событий
-const statusSelect = document.getElementById('customerStatusSelect');
-if(statusSelect) {
-  statusSelect.addEventListener('change', () => { 
-    selectedStatus = statusSelect.value; 
-    updateDiscountUI(); 
-  });
-}
-
-const recalcBtn = document.getElementById('recalcDiscountBtn');
-if(recalcBtn) {
-  recalcBtn.addEventListener('click', recalcDiscountFromSelect);
-}
-
-const checkoutBtn = document.getElementById('checkoutBtn');
-if(checkoutBtn) {
-  checkoutBtn.addEventListener('click', checkoutOrder);
-}
-
-const clearCartBtn = document.getElementById('clearCartBtn');
-if(clearCartBtn) {
-  clearCartBtn.addEventListener('click', () => { 
-    cart = []; 
-    saveData(); 
-    renderCartPage(); 
-    updateCartBadge(); 
-    showToast("Корзина очищена"); 
-  });
+// Дублируем на случай, если DOMContentLoaded уже произошёл
+if(document.readyState === 'loading') {
+  // Ждём событие
+} else {
+  // DOM уже загружен, вызываем вручную
+  setTimeout(function() {
+    if(document.getElementById('checkoutBtn')) {
+      const btn = document.getElementById('checkoutBtn');
+      if(btn && !btn.hasListener) {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          checkoutOrder();
+        });
+        btn.hasListener = true;
+      }
+    }
+  }, 100);
 }

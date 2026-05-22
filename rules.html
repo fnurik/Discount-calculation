@@ -7,6 +7,39 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <link rel="stylesheet" href="style.css">
+<style>
+  .history-item {
+    border-bottom: 1px solid #eee;
+    padding: 12px 0;
+  }
+  .history-item:last-child {
+    border-bottom: none;
+  }
+  .stats-box {
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    padding: 20px;
+    border-radius: 20px;
+    margin: 20px 0;
+    text-align: center;
+  }
+  .discount-table {
+    width: 100%;
+    margin: 20px 0;
+  }
+  .discount-table th, .discount-table td {
+    padding: 12px;
+    text-align: center;
+  }
+  .vip-badge {
+    background: linear-gradient(135deg, #ffd700, #ffb347);
+    color: #2c3e4e;
+    padding: 4px 12px;
+    border-radius: 40px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-block;
+  }
+</style>
 </head>
 <body>
 
@@ -27,32 +60,76 @@
 <div class="page">
   <div class="rules-container">
     <h2><i class="fas fa-gavel"></i> Правила предоставления скидок</h2>
-    <ul class="rules-list">
-      <li><strong> Новый клиент</strong> — скидка 0% (первый заказ без дополнительной скидки).</li>
-      <li><strong> Постоянный клиент</strong> — скидка 5% на любой заказ. Условие: совершено <strong>3 и более заказа</strong> (учитывается история покупок).</li>
-      <li><strong> VIP-клиент</strong> — скидка 10% на весь заказ. Условие: общая сумма всех предыдущих заказов превышает <strong>50 000 ₽</strong>.</li>
-      <li><strong> Проверка VIP-статуса:</strong> Система автоматически анализирует историю ваших заказов. Если сумма всех оформленных заказов достигает 50 000 ₽, вы получаете VIP-скидку 10% независимо от количества заказов.</li>
-      <li>Скидка рассчитывается от суммы товаров в корзине до применения.</li>
-      <li>Вы можете вручную выбрать статус в калькуляторе, но при оформлении заказа система покажет, какой статус был бы присвоен автоматически.</li>
-      <li>После оформления заказа товары списываются из корзины, а заказ добавляется в историю для накопления к VIP-статусу.</li>
-    </ul>
     
-    <div style="background: #fff3e0; padding: 20px; border-radius: 24px; margin-top: 24px;">
-      <h3><i class="fas fa-chart-line"></i> Как проверить VIP-статус?</h3>
-      <p style="margin-top: 12px;">На странице <strong>Корзины</strong> отображается блок "Автоопределение статуса", где показывается:</p>
-      <ul style="margin-left: 24px; margin-top: 10px;">
-        <li>Количество оформленных заказов</li>
-        <li>Общая сумма всех заказов</li>
-        <li>Текущий рекомендуемый статус (Новый / Постоянный / VIP)</li>
-        <li>До какого порога нужно накопить для VIP (если ещё не достигнут)</li>
-      </ul>
+    <div class="stats-box">
+      <h3><i class="fas fa-chart-simple"></i> Ваша статистика</h3>
+      <p> <strong>Количество заказов:</strong> <span id="rulesOrdersCount">0</span></p>
+      <p> <strong>Общая сумма заказов:</strong> <span id="rulesTotalSpent">0 ₽</span></p>
+      <p> <strong>Текущий статус:</strong> <span id="rulesCurrentStatus"> Новый клиент</span></p>
     </div>
     
-    <div class="footnote" style="margin-top: 24px;"><i class="fas fa-info-circle"></i> Используйте каталог, добавляйте товары, оформляйте заказы и следите за накоплением к VIP-статусу!</div>
+    <h3><i class="fas fa-percent"></i> Система скидок (автоматическая)</h3>
+    <table class="discount-table" border="1" cellpadding="10" style="border-collapse: collapse; width: 100%; margin: 15px 0;">
+      <thead>
+        <tr style="background-color: #4caf50; color: white;">
+          <th>Статус</th>
+          <th>Иконка</th>
+          <th>Условие получения</th>
+          <th>Размер скидки</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Новый клиент</td>
+          <td>Менее 3 заказов И сумма менее 50 000 ₽</td>
+          <td><strong>0%</strong></td>
+        </tr>
+        <tr style="background-color: #e8f5e9;">
+          <td>Постоянный клиент</td>
+          <td>3 и более заказа (независимо от суммы)</td>
+          <td><strong>5%</strong></td>
+        </tr>
+        <tr style="background-color: #fff3e0;">
+          <td>VIP-клиент</td>
+          <td>Общая сумма заказов ≥ 50 000 ₽</td>
+          <td><strong>10%</strong></td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div class="note" style="background: #e3f2fd; padding: 15px; border-radius: 16px; margin: 15px 0;">
+      <strong> Автоматическое определение:</strong> Система самостоятельно анализирует вашу историю заказов и присваивает статус. <strong>Ручной выбор скидки отсутствует</strong> — всё честно и автоматически!
+    </div>
+    
+    <ul class="rules-list">
+      <li><strong> Новый клиент</strong> — скидка 0%. Начните совершать покупки, чтобы получать скидки!</li>
+      <li><strong> Постоянный клиент</strong> — скидка 5% на любой заказ. Условие: совершено <strong>3 и более заказа</strong>.</li>
+      <li><strong> VIP-клиент</strong> — скидка 10% на весь заказ. Условие: общая сумма заказов <strong>50 000 ₽ и более</strong>.</li>
+      <li><strong> Приоритет:</strong> VIP-статус имеет приоритет над постоянным. Если вы выполнили оба условия, применяется VIP-скидка 10%.</li>
+      <li><strong> Очистка истории:</strong> Вы можете очистить историю заказов на странице Корзины. Статус сбросится до «Новый клиент».</li>
+      <li><strong> Тестовый заказ:</strong> Для проверки логики можно добавить тестовый заказ на 1000 ₽.</li>
+    </ul>
+    
+    <h3><i class="fas fa-clock"></i> История ваших заказов</h3>
+    <div id="historyOrdersList" style="max-height: 300px; overflow-y: auto; margin: 15px 0; border: 1px solid #eee; border-radius: 16px; padding: 10px;">
+      <div style="text-align: center; padding: 20px;">Загрузка...</div>
+    </div>
+    
+    <div class="footnote" style="margin-top: 24px;">
+      <i class="fas fa-info-circle"></i> Статус обновляется автоматически после каждого оформленного заказа. Никаких ручных настроек — только ваши покупки влияют на скидку!
+    </div>
   </div>
 </div>
 
 <script src="data.js"></script>
 <script src="common.js"></script>
+<script>
+  function updateRulesPage() {
+    loadData();
+    updateCartBadge();
+    updateRulesHistoryInfo();
+  }
+  updateRulesPage();
+</script>
 </body>
 </html>

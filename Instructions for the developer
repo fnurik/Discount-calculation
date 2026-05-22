@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Руководство разработчика</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    line-height: 1.6;
+  }
+  h1, h2, h3 {
+    color: #2e7d32;
+  }
+  table {
+    margin: 15px 0;
+  }
+  code {
+    background: #f4f4f4;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+  }
+  pre {
+    background: #f4f4f4;
+    padding: 15px;
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+  hr {
+    margin: 30px 0;
+  }
+</style>
+</head>
+<body>
+<h1>Руководство разработчика</h1>
+<h2>Интернет-магазин «SmartDiscount» — техническая документация</h2>
+
+<h3>1. Обзор проекта</h3>
+<p>Проект представляет собой одностраничное веб-приложение (SPA-like с навигацией через отдельные HTML-файлы) для демонстрации работы системы скидок на основе статуса клиента. Проект написан на чистом HTML, CSS и JavaScript без использования сторонних фреймворков.</p>
+
+<h3>2. Структура файлов проекта</h3>
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+  <thead>
+    <tr>
+      <th style="background-color: #4caf50; color: white; padding: 10px;">№</th>
+      <th style="background-color: #4caf50; color: white; padding: 10px;">Имя файла</th>
+      <th style="background-color: #4caf50; color: white; padding: 10px;">Тип</th>
+      <th style="background-color: #4caf50; color: white; padding: 10px;">Назначение</th>
+      <th style="background-color: #4caf50; color: white; padding: 10px;">От каких файлов зависит</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td style="padding: 8px;">1</td><td style="padding: 8px;"><code>index.html</code></td><td style="padding: 8px;">HTML</td><td style="padding: 8px;">Страница каталога товаров</td><td style="padding: 8px;">style.css, data.js, catalog.js</td></tr>
+    <tr><td style="padding: 8px;">2</td><td style="padding: 8px;"><code>cart.html</code></td><td style="padding: 8px;">HTML</td><td style="padding: 8px;">Страница корзины и калькулятора скидок</td><td style="padding: 8px;">style.css, data.js, cart.js</td></tr>
+    <tr><td style="padding: 8px;">3</td><td style="padding: 8px;"><code>rules.html</code></td><td style="padding: 8px;">HTML</td><td style="padding: 8px;">Страница правил скидок</td><td style="padding: 8px;">style.css, data.js, common.js</td></tr>
+    <tr><td style="padding: 8px;">4</td><td style="padding: 8px;"><code>style.css</code></td><td style="padding: 8px;">CSS</td><td style="padding: 8px;">Общие стили для всех страниц</td><td style="padding: 8px;">— (подключается ко всем HTML)</td></tr>
+    <tr><td style="padding: 8px;">5</td><td style="padding: 8px;"><code>data.js</code></td><td style="padding: 8px;">JavaScript</td><td style="padding: 8px;">Данные товаров, работа с localStorage, глобальные функции</td><td style="padding: 8px;">— (базовый файл)</td></tr>
+    <tr><td style="padding: 8px;">6</td><td style="padding: 8px;"><code>catalog.js</code></td><td style="padding: 8px;">JavaScript</td><td style="padding: 8px;">Логика работы каталога (фильтрация, сортировка)</td><td style="padding: 8px;">data.js</td></tr>
+    <tr><td style="padding: 8px;">7</td><td style="padding: 8px;"><code>cart.js</code></td><td style="padding: 8px;">JavaScript</td><td style="padding: 8px;">Логика корзины, скидок, оформления заказов</td><td style="padding: 8px;">data.js</td></tr>
+    <tr><td style="padding: 8px;">8</td><td style="padding: 8px;"><code>common.js</code></td><td style="padding: 8px;">JavaScript</td><td style="padding: 8px;">Общий код для страницы правил (синхронизация)</td><td style="padding: 8px;">data.js</td></tr>
+    <tr><td style="padding: 8px;">9</td><td style="padding: 8px;"><code>Руководство_пользователя.docx</code></td><td style="padding: 8px;">DOCX</td><td style="padding: 8px;">Инструкция для пользователей по работе с сайтом</td><td style="padding: 8px;">—</td></tr>
+    <tr><td style="padding: 8px;">10</td><td style="padding: 8px;"><code>Руководство_разработчика.docx</code></td><td style="padding: 8px;">DOCX</td><td style="padding: 8px;">Техническая документация для передачи проекта</td><td style="padding: 8px;">—</td></tr>
+  </tbody>
+</table>
+
+<h4>Таблица связей и зависимостей между файлами</h4>
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+  <thead>
+    <tr>
+      <th style="background-color: #4caf50; color: white; padding: 10px;">Файл</th>
+      <th style="background-color: #4caf50; color: white; padding: 10px;">Подключаемые файлы</th>
+      <th style="background-color: #4caf50; color: white; padding: 10px;">Зависимости</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td style="padding: 8px;"><code>index.html</code></td><td style="padding: 8px;"><code>style.css</code>, <code>data.js</code>, <code>catalog.js</code></td><td style="padding: 8px;">catalog.js → data.js</td></tr>
+    <tr><td style="padding: 8px;"><code>cart.html</code></td><td style="padding: 8px;"><code>style.css</code>, <code>data.js</code>, <code>cart.js</code></td><td style="padding: 8px;">cart.js → data.js</td></tr>
+    <tr><td style="padding: 8px;"><code>rules.html</code></td><td style="padding: 8px;"><code>style.css</code>, <code>data.js</code>, <code>common.js</code></td><td style="padding: 8px;">common.js → data.js</td></tr>
+    <tr><td style="padding: 8px;"><code>catalog.js</code></td><td style="padding: 8px;">—</td><td style="padding: 8px;">использует функции из <code>data.js</code></td></tr>
+    <tr><td style="padding: 8px;"><code>cart.js</code></td><td style="padding: 8px;">—</td><td style="padding: 8px;">использует функции из <code>data.js</code></td></tr>
+    <tr><td style="padding: 8px;"><code>common.js</code></td><td style="padding: 8px;">—</td><td style="padding: 8px;">использует функции из <code>data.js</code></td></tr>
+  </tbody>
+</table>
+
+<h3>3. Передача проекта другому разработчику</h3>
+<p>Если вы хотите передать проект другому человеку, выполните следующие шаги:</p>
+<ol>
+<li><strong>Соберите все файлы</strong> — убедитесь, что у вас есть все 8 файлов (HTML, CSS, JS), перечисленных в структуре выше.</li>
+<li><strong>Проверьте относительные пути</strong> — все ссылки в HTML-файлах используют относительные пути (например, href="cart.html", src="data.js"). При переносе сохраните иерархию файлов в одной папке.</li>
+<li><strong>Очистите тестовые данные</strong> — если нужно передать проект в чистом виде, откройте браузер, откройте инструменты разработчика (F12), перейдите на вкладку Application → Local Storage и удалите ключи <code>multiPageCart</code> и <code>multiPageHistory</code>. Или просто скопируйте исходные файлы без предварительного использования.</li>
+<li><strong>Создайте архив</strong> — упакуйте все файлы в ZIP-архив для удобной передачи.</li>
+<li><strong>Предоставьте документацию</strong> — обязательно приложите оба руководства (пользователя и разработчика).</li>
+</ol>
+
+<h3>4. Зависимости и технологии</h3>
+<ul>
+<li>Шрифты: Google Fonts (Inter)</li>
+<li>Иконки: Font Awesome 6 (CDN)</li>
+<li>Хранение данных: localStorage браузера</li>
+<li>Сторонние библиотеки: отсутствуют</li>
+</ul>
+
+<h3>5. Архитектура и модули</h3>
+<h4>5.1. data.js — ядро данных</h4>
+<p>Содержит:</p>
+<ul>
+<li>Массив <code>PRODUCTS</code> — список товаров с id, названием, ценой, категорией, иконкой.</li>
+<li>Переменные <code>cart</code> (корзина) и <code>ordersHistory</code> (история заказов).</li>
+<li>Функции <code>loadData()</code> и <code>saveData()</code> для работы с localStorage.</li>
+<li><code>getCartSubtotal()</code> — расчёт суммы корзины.</li>
+<li><code>getCartTotalQuantity()</code> — общее количество товаров.</li>
+<li><code>getDiscountPercentByStatus(status)</code> — возвращает процент скидки по статусу.</li>
+<li><code>getAutoStatusFromHistory()</code> — автоматическое определение статуса на основе истории.</li>
+<li><code>checkVIPStatus()</code> — проверка достижения VIP-уровня.</li>
+<li><code>updateCartBadge()</code> — обновление счётчика корзины.</li>
+<li><code>addToCartFromCatalog(product)</code> — глобальная функция добавления товара.</li>
+</ul>
+
+<h4>5.2. catalog.js — каталог</h4>
+<p>Отвечает за отображение товаров, фильтрацию по категориям и сортировку. Использует DOM-манипуляции для рендеринга сетки товаров.</p>
+
+<h4>5.3. cart.js — корзина и скидки</h4>
+<p>Основная логика:</p>
+<ul>
+<li>Отображение товаров в корзине с возможностью изменения количества.</li>
+<li>Блок автоопределения статуса <code>displayAutoStatus()</code>.</li>
+<li>Расчёт скидки и итоговой суммы <code>updateDiscountUI()</code>.</li>
+<li>Оформление заказа <code>checkoutOrder()</code> с сохранением в историю.</li>
+</ul>
+
+<h4>5.4. style.css — стили</h4>
+<p>Содержит адаптивный CSS с использованием Flexbox и Grid. Медиа-запросы для мобильных устройств.</p>
+
+<h3>6. Как добавить новый товар</h3>
+<p>Откройте файл <strong>data.js</strong> и в массив <code>PRODUCTS</code> добавьте новый объект:</p>
+<pre>
+{ id: 10, name: "Название товара", price: 9999, category: "electronics", icon: "fa-icon-name", catName: "Категория" }
+</pre>
+<p>Категория должна совпадать с существующей (electronics, audio, wearables, accessories) либо добавьте новую категорию в <code>catalog.js</code> в функцию <code>renderCategoryFilters()</code>.</p>
+
+<h3>7. Как изменить логику скидок</h3>
+<p>В файле <strong>data.js</strong> найдите функцию <code>getDiscountPercentByStatus</code>:</p>
+<pre>
+function getDiscountPercentByStatus(status) {
+  if(status === 'regular') return 5;   // измените процент
+  if(status === 'vip') return 10;      // измените процент
+  return 0;
+}
+</pre>
+<p>Для изменения порога VIP-статуса (50 000 ₽) измените значение в функциях <code>getAutoStatusFromHistory</code> и <code>checkVIPStatus</code>.</p>
+
+<h3>8. Возможные проблемы и их решение</h3>
+<table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%;">
+  <thead>
+    <tr><th style="background-color: #4caf50; color: white; padding: 8px;">Проблема</th><th style="background-color: #4caf50; color: white; padding: 8px;">Решение</th></tr>
+  </thead>
+  <tbody>
+    <tr><td style="padding: 8px;">Товар не добавляется в корзину</td><td style="padding: 8px;">Проверьте, что все JS-файлы подключены в правильном порядке (data.js → catalog.js). Откройте консоль браузера (F12) на наличие ошибок.</td></tr>
+    <tr><td style="padding: 8px;">Счётчик корзины не обновляется</td><td style="padding: 8px;">Убедитесь, что функция <code>updateCartBadge()</code> вызывается после изменения корзины. Проверьте, что элемент с id="cartCountHeader" существует на странице.</td></tr>
+    <tr><td style="padding: 8px;">Данные не сохраняются после перезагрузки</td><td style="padding: 8px;">Проверьте, включён ли localStorage в браузере. Очистите кэш и попробуйте снова.</td></tr>
+    <tr><td style="padding: 8px;">Стили не применяются</td><td style="padding: 8px;">Проверьте путь к style.css. Файл должен лежать в той же папке, что и HTML.</td></tr>
+  </tbody>
+</table>
+
+<h3>9. Развёртывание проекта</h3>
+<p>Проект не требует серверной части — это статический сайт. Для локального просмотра просто откройте index.html в браузере. Для публикации в интернете загрузите все файлы на любой хостинг статических сайтов (GitHub Pages, Netlify, Vercel).</p>
+
+<h3>10. Планы по расширению (для доработок)</h3>
+<ul>
+<li>Добавление возможности регистрации пользователей.</li>
+<li>Подключение серверной базы данных вместо localStorage.</li>
+<li>Добавление каталога с пагинацией (постраничный вывод).</li>
+<li>Интеграция с платёжными системами.</li>
+<li>Добавление промокодов и сезонных акций.</li>
+</ul>
+
+<h3>11. Контакты поддержки</h3>
+<p>Для технических вопросов и баг-репортов обращайтесь к разработчику. При передаче проекта заполните контактную информацию:</p>
+<p>Разработчик: Ошарина Ангелина<br>
+Email:fnurik123@gmail.com<br>
+Дата последнего обновления: 22/05/2026</p>
+
+
+</body>
+</html>

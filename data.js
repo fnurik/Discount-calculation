@@ -1,0 +1,122 @@
+// ТОВАРЫ С КАТЕГОРИЯМИ
+const PRODUCTS = [
+  { id: 1, name: "Смартфон X100", price: 25990, category: "electronics", icon: "fa-mobile-alt", catName: "Электроника" },
+  { id: 2, name: "Ноутбук UltraBook", price: 68990, category: "electronics", icon: "fa-laptop", catName: "Электроника" },
+  { id: 3, name: "Беспроводные наушники", price: 4990, category: "audio", icon: "fa-headphones", catName: "Аудио" },
+  { id: 4, name: "Умные часы Pro", price: 12500, category: "wearables", icon: "fa-clock", catName: "Гаджеты" },
+  { id: 5, name: "Портативная колонка", price: 3450, category: "audio", icon: "fa-music", catName: "Аудио" },
+  { id: 6, name: "Игровая мышь", price: 2890, category: "accessories", icon: "fa-mouse", catName: "Аксессуары" },
+  { id: 7, name: "Механическая клавиатура", price: 8900, category: "accessories", icon: "fa-keyboard", catName: "Аксессуары" },
+  { id: 8, name: "Фитнес-браслет", price: 4200, category: "wearables", icon: "fa-heartbeat", catName: "Гаджеты" },
+  { id: 9, name: "Монитор 27'' 4K", price: 32990, category: "electronics", icon: "fa-tv", catName: "Электроника" }
+];
+
+// Глобальные переменные
+let cart = [];
+let ordersHistory = [];
+
+// Загрузка и сохранение
+function loadData() {
+  const savedCart = localStorage.getItem('multiPageCart');
+  const savedHistory = localStorage.getItem('multiPageHistory');
+  if(savedCart) { 
+    try { 
+      cart = JSON.parse(savedCart); 
+    } catch(e) { 
+      cart = []; 
+    } 
+  }
+  if(savedHistory) { 
+    try { 
+      ordersHistory = JSON.parse(savedHistory); 
+    } catch(e) { 
+      ordersHistory = []; 
+    } 
+  }
+  if(!cart) cart = [];
+  if(!ordersHistory) ordersHistory = [];
+}
+
+function saveData() {
+  localStorage.setItem('multiPageCart', JSON.stringify(cart));
+  localStorage.setItem('multiPageHistory', JSON.stringify(ordersHistory));
+}
+
+// Вспомогательные функции
+function getCartSubtotal() {
+  return cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+}
+
+function getCartTotalQuantity() {
+  return cart.reduce((sum, i) => sum + i.quantity, 0);
+}
+
+function getDiscountPercentByStatus(status) {
+  if(status === 'regular') return 5;
+  if(status === 'vip') return 10;
+  return 0;
+}
+
+// Функция для автоматического определения статуса на основе истории заказов
+function getAutoStatusFromHistory() {
+  const totalOrdersCount = ordersHistory.length;
+  const totalSpent = ordersHistory.reduce((sum, order) => sum + order.finalAmount, 0);
+  
+  // VIP проверка: сумма заказов >= 50000
+  if(totalSpent >= 50000) {
+    return { status: 'vip', reason: `Общая сумма заказов ${totalSpent.toLocaleString()} ₽ ≥ 50 000 ₽`, totalSpent, totalOrdersCount };
+  }
+  // Постоянный клиент: 3+ заказа
+  if(totalOrdersCount >= 3) {
+    return { status: 'regular', reason: `Количество заказов: ${totalOrdersCount} (3 и более)`, totalSpent, totalOrdersCount };
+  }
+  // Новый клиент
+  return { status: 'new', reason: `Недостаточно заказов или суммы для скидки`, totalSpent, totalOrdersCount };
+}
+
+// Функция для проверки, достиг ли клиент VIP-статуса
+function checkVIPStatus() {
+  const totalSpent = ordersHistory.reduce((sum, order) => sum + order.finalAmount, 0);
+  const isVIP = totalSpent >= 50000;
+  const neededForVIP = isVIP ? 0 : 50000 - totalSpent;
+  return { isVIP, totalSpent, neededForVIP, ordersCount: ordersHistory.length };
+}
+
+function updateCartBadge() {
+  const totalQty = getCartTotalQuantity();
+  const badges = document.querySelectorAll('#cartCountHeader');
+  badges.forEach(badge => {
+    if(badge) badge.innerText = totalQty;
+  });
+}
+
+function showToast(msg) {
+  let toast = document.createElement('div');
+  toast.innerText = msg;
+  toast.style.position = 'fixed';
+  toast.style.bottom = '20px';
+  toast.style.left = '50%';
+  toast.style.transform = 'translateX(-50%)';
+  toast.style.backgroundColor = '#2e7d32';
+  toast.style.color = 'white';
+  toast.style.padding = '12px 24px';
+  toast.style.borderRadius = '40px';
+  toast.style.zIndex = '999';
+  toast.style.fontWeight = '500';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 1800);
+}
+
+// Функция добавления в корзину (глобальная)
+function addToCartFromCatalog(product) {
+  loadData(); // Перезагружаем данные перед добавлением
+  const existing = cart.find(i => i.id === product.id);
+  if(existing) {
+    existing.quantity += 1;
+  } else {
+    cart.push({ id: product.id, name: product.name, price: product.price, quantity: 1, category: product.category });
+  }
+  saveData();
+  updateCartBadge();
+  showToast(`${product.name} добавлен в корзину`);
+}

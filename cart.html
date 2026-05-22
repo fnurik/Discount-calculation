@@ -29,18 +29,22 @@
     <div class="cart-items-card">
       <h3 style="margin-bottom: 16px;"><i class="fas fa-boxes"></i> Товары в корзине</h3>
       <div id="cartItemsList"></div>
-      <button id="clearCartBtn" class="btn-clear"><i class="fas fa-trash-alt"></i> Очистить корзину</button>
+      <button id="clearCartBtn" class="btn-clear" style="margin-top: 16px;"><i class="fas fa-trash-alt"></i> Очистить корзину</button>
     </div>
+    
     <div class="discount-card">
       <h3><i class="fas fa-calculator"></i> Калькулятор скидок</h3>
       
       <!-- Блок с автоматическим определением статуса -->
-      <div id="autoStatusBlock" style="background: #e8f5e9; padding: 12px; border-radius: 20px; margin-bottom: 16px;">
+      <div id="autoStatusBlock" style="background: #e8f5e9; padding: 15px; border-radius: 20px; margin-bottom: 16px;">
         <div style="font-size: 13px; color: #2e7d32; margin-bottom: 8px;">
           <i class="fas fa-robot"></i> <strong>Автоопределение статуса</strong>
         </div>
         <div id="autoStatusDisplay" style="font-weight: 600; font-size: 15px;"></div>
-        <div id="vipCheckInfo" style="font-size: 12px; color: #555; margin-top: 6px;"></div>
+        <div id="vipCheckInfo" style="font-size: 12px; color: #555; margin-top: 8px;"></div>
+        <div style="font-size: 12px; margin-top: 8px; color: #666;">
+          Заказов: <span id="ordersCountValue">0</span> | Сумма: <span id="totalSpentValue">0 ₽</span>
+        </div>
       </div>
       
       <label style="font-weight: 500;">Или выберите статус вручную:</label>
@@ -58,7 +62,21 @@
       
       <button id="recalcDiscountBtn" style="background:#e8f5e9; color:#2e7d32; width:100%; padding:12px; border-radius:40px; border:none; font-weight:600; margin:10px 0;"><i class="fas fa-sync-alt"></i> Пересчитать скидку</button>
       <button id="checkoutBtn" class="btn-checkout"><i class="fas fa-credit-card"></i> Оформить заказ</button>
-      <div class="footnote">*Скидка применяется автоматически. VIP-статус присваивается при общей сумме заказов от 50 000 ₽.</div>
+      
+      <hr style="margin: 20px 0;">
+      
+      <h4><i class="fas fa-history"></i> Управление историей</h4>
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button id="clearHistoryBtn" style="background: #ffebee; color: #c62828; padding: 10px; border-radius: 40px; border: none; font-weight: 600; flex: 1; cursor: pointer;">
+          <i class="fas fa-trash-alt"></i> Очистить историю
+        </button>
+        <button id="addTestOrderBtn" style="background: #e3f2fd; color: #1565c0; padding: 10px; border-radius: 40px; border: none; font-weight: 600; flex: 1; cursor: pointer;">
+          <i class="fas fa-flask"></i> Тестовый заказ
+        </button>
+      </div>
+      <div class="footnote" style="margin-top: 12px;">
+        * Очистка истории сбросит статус до «Новый клиент». Тестовый заказ поможет проверить логику накопления.
+      </div>
     </div>
   </div>
 </div>

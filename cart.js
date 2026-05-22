@@ -7,6 +7,11 @@ function displayAutoStatus() {
   autoStatusInfo = autoStatus;
   const autoDisplay = document.getElementById('autoStatusDisplay');
   const vipCheckInfo = document.getElementById('vipCheckInfo');
+  const ordersCountSpan = document.getElementById('ordersCountValue');
+  const totalSpentSpan = document.getElementById('totalSpentValue');
+  
+  if(ordersCountSpan) ordersCountSpan.innerText = autoStatus.totalOrdersCount;
+  if(totalSpentSpan) totalSpentSpan.innerText = autoStatus.totalSpent.toLocaleString() + ' ₽';
   
   if(!autoDisplay) return;
   
@@ -18,20 +23,20 @@ function displayAutoStatus() {
     statusIcon = '💎';
     statusText = 'VIP-клиент';
     statusColor = '#ff9800';
-    autoDisplay.innerHTML = `<span style="color: ${statusColor};">${statusIcon} ${statusText} — скидка 10%</span>
-    <div style="font-size: 12px; margin-top: 5px;">✅ Достигнута сумма заказов ${autoStatus.totalSpent.toLocaleString()} ₽ (≥ 50 000 ₽)</div>`;
+    autoDisplay.innerHTML = `<span style="color: ${statusColor}; font-size: 18px; font-weight: bold;">${statusIcon} ${statusText} — скидка 10%</span>
+    <div style="font-size: 13px; margin-top: 8px;"> Достигнута сумма заказов ${autoStatus.totalSpent.toLocaleString()} ₽ (≥ 50 000 ₽)</div>`;
   } else if(autoStatus.status === 'regular') {
     statusIcon = '⭐';
     statusText = 'Постоянный клиент';
     statusColor = '#4caf50';
-    autoDisplay.innerHTML = `<span style="color: ${statusColor};">${statusIcon} ${statusText} — скидка 5%</span>
-    <div style="font-size: 12px; margin-top: 5px;">📦 Количество заказов: ${autoStatus.totalOrdersCount} (3+)</div>`;
+    autoDisplay.innerHTML = `<span style="color: ${statusColor}; font-size: 18px; font-weight: bold;">${statusIcon} ${statusText} — скидка 5%</span>
+    <div style="font-size: 13px; margin-top: 8px;"> Количество заказов: ${autoStatus.totalOrdersCount} (3+)</div>`;
   } else {
     statusIcon = '🆕';
     statusText = 'Новый клиент';
     statusColor = '#666';
-    autoDisplay.innerHTML = `<span style="color: ${statusColor};">${statusIcon} ${statusText} — скидка 0%</span>
-    <div style="font-size: 12px; margin-top: 5px;">📦 Заказов: ${autoStatus.totalOrdersCount} | 💰 Сумма: ${autoStatus.totalSpent.toLocaleString()} ₽</div>`;
+    autoDisplay.innerHTML = `<span style="color: ${statusColor}; font-size: 18px; font-weight: bold;">${statusIcon} ${statusText} — скидка 0%</span>
+    <div style="font-size: 13px; margin-top: 8px;"> Заказов: ${autoStatus.totalOrdersCount} |  Сумма: ${autoStatus.totalSpent.toLocaleString()} ₽</div>`;
   }
   
   // Проверка VIP статуса
@@ -45,7 +50,7 @@ function displayAutoStatus() {
       vipCheckInfo.style.color = '#d4af37';
       vipCheckInfo.style.fontWeight = '600';
     } else {
-      vipCheckInfo.innerHTML = `<i class="fas fa-info-circle"></i> Совершайте покупки, чтобы получить VIP-статус (50 000 ₽)`;
+      vipCheckInfo.innerHTML = `<i class="fas fa-info-circle"></i> Совершайте покупки, чтобы получить VIP-статус (50 000 ₽) или Постоянный (3 заказа)`;
       vipCheckInfo.style.color = '#666';
     }
   }
@@ -54,7 +59,7 @@ function displayAutoStatus() {
 }
 
 function renderCartPage() {
-  loadData(); // Перезагружаем данные перед отображением
+  loadData();
   const container = document.getElementById('cartItemsList');
   if(!container) return;
   
@@ -160,7 +165,43 @@ function checkoutOrder() {
   renderCartPage();
   updateCartBadge();
   displayAutoStatus();
-  alert(`✅ Заказ оформлен!\nСумма со скидкой: ${finalAmount.toLocaleString()} ₽\nСпасибо за покупку!`);
+  alert(` Заказ оформлен!\nСумма со скидкой: ${finalAmount.toLocaleString()} ₽\nСпасибо за покупку!`);
+}
+
+// Функция для отображения истории на странице правил
+function updateRulesHistoryInfo() {
+  const historyListDiv = document.getElementById('historyOrdersList');
+  const totalSpentSpan = document.getElementById('rulesTotalSpent');
+  const ordersCountSpan = document.getElementById('rulesOrdersCount');
+  const statusSpan = document.getElementById('rulesCurrentStatus');
+  
+  if(historyListDiv) {
+    if(ordersHistory.length === 0) {
+      historyListDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;">История заказов пуста. Оформите первый заказ!</div>';
+    } else {
+      historyListDiv.innerHTML = ordersHistory.map((order, index) => `
+        <div style="border-bottom: 1px solid #eee; padding: 12px 0;">
+          <div style="font-weight: bold;">${order.date}</div>
+          <div>Товары: ${order.items.map(i => `${i.name} x${i.quantity}`).join(', ')}</div>
+          <div>Сумма: ${order.subtotal.toLocaleString()} ₽ → Скидка ${order.discountPercent}% → Итого: ${order.finalAmount.toLocaleString()} ₽</div>
+        </div>
+      `).join('');
+    }
+  }
+  
+  const totalSpent = getTotalSpent();
+  const ordersCount = getOrdersCount();
+  const autoStatus = getAutoStatusFromHistory();
+  
+  if(totalSpentSpan) totalSpentSpan.innerText = totalSpent.toLocaleString() + ' ₽';
+  if(ordersCountSpan) ordersCountSpan.innerText = ordersCount;
+  if(statusSpan) {
+    let statusText = '';
+    if(autoStatus.status === 'vip') statusText = ' VIP-клиент (10% скидка)';
+    else if(autoStatus.status === 'regular') statusText = 'Постоянный клиент (5% скидка)';
+    else statusText = 'Новый клиент (0% скидка)';
+    statusSpan.innerHTML = statusText;
+  }
 }
 
 // Инициализация страницы корзины
@@ -196,5 +237,23 @@ if(clearCartBtn) {
     renderCartPage(); 
     updateCartBadge(); 
     showToast("Корзина очищена"); 
+  });
+}
+
+const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+if(clearHistoryBtn) {
+  clearHistoryBtn.addEventListener('click', () => {
+    clearOrderHistory();
+    displayAutoStatus();
+    updateDiscountUI();
+  });
+}
+
+const addTestOrderBtn = document.getElementById('addTestOrderBtn');
+if(addTestOrderBtn) {
+  addTestOrderBtn.addEventListener('click', () => {
+    addTestOrder();
+    displayAutoStatus();
+    updateDiscountUI();
   });
 }

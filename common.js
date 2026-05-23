@@ -55,7 +55,7 @@ function updateRulesHistoryInfo() {
     let statusText = '';
     if(autoStatus.status === 'vip') statusText = ' VIP-клиент (10% скидка)';
     else if(autoStatus.status === 'regular') statusText = ' Постоянный клиент (5% скидка)';
-    else statusText = '🆕 Новый клиент (0% скидка)';
+    else statusText = ' Новый клиент (0% скидка)';
     statusSpan.innerHTML = statusText;
   }
 }
